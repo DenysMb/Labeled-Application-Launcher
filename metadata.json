@@ -17,7 +17,7 @@
             "Plasma/Applet"
         ],
         "Version": "1.0",
-        "Website": "https://userbase.kde.org/Plasma/Kickoff"
+        "Website": "https://github.com/DenysMb/Labeled-Application-Launcher"
     },
     "X-Plasma-API": "declarativeappletscript",
     "X-Plasma-MainScript": "ui/Kickoff.qml",
