@@ -1,0 +1,30 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "denysmb@zoho.com",
+                "Name": "Denys Madureira"
+            }
+        ],
+        "Category": "Application Launchers",
+        "Description": "Labeled launcher to start applications",
+        "EnabledByDefault": true,
+        "Icon": "start-here-kde",
+        "Id": "labeled-kickoff",
+        "License": "GPL-2.0+",
+        "Name": "Labeled Application Launcher",
+        "ServiceTypes": [
+            "Plasma/Applet"
+        ],
+        "Version": "1.0",
+        "Website": "https://userbase.kde.org/Plasma/Kickoff"
+    },
+    "X-Plasma-API": "declarativeappletscript",
+    "X-Plasma-MainScript": "ui/Kickoff.qml",
+    "X-Plasma-Provides": [
+        "org.kde.plasma.launchermenu"
+    ],
+    "X-Plasma-RequiredExtensions": [
+        "LaunchApp"
+    ]
+}
