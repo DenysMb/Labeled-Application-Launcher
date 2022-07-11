@@ -244,13 +244,14 @@ Item {
                 active: parent.containsMouse || compactDragArea.containsDrag
                 smooth: true
                 roundToIconSize: aspectRatio === 1
+                anchors.fill: vertical ? parent : undefined
             }
 
             PC3.Label {
                 id: menuLabel
                 text: !vertical ? kickoff.menuLabel : ''
-                anchors.left: plasmoid.icon ? buttonIcon.right : parent.left
-                anchors.leftMargin: PlasmaCore.Units.smallSpacing * 2
+                anchors.left: !vertical ? plasmoid.icon ? buttonIcon.right : parent.left : undefined
+                anchors.leftMargin: !vertical ? PlasmaCore.Units.smallSpacing * 2 : undefined
                 height: compactRoot.height
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
