@@ -16,7 +16,7 @@
         "ServiceTypes": [
             "Plasma/Applet"
         ],
-        "Version": "2.0.1",
+        "Version": "2.0.2",
         "Website": "https://github.com/DenysMb/Labeled-Application-Launcher"
     },
     "X-Plasma-API": "declarativeappletscript",

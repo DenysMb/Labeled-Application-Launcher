@@ -75,7 +75,7 @@ ColumnLayout {
                 MenuItem {
                     text: i18n("Remove Icon")
                     icon.name: "delete"
-                    enabled: menuLabel.text && plasmoid.formFactor === PlasmaCore.Types.Vertical
+                    enabled: menuLabel.text && plasmoid.formFactor !== PlasmaCore.Types.Vertical
                     onClicked: cfg_icon = ""
                 }
             }
