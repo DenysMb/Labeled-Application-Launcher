@@ -177,3 +177,9 @@ function handleFavoriteAction(actionId, actionArgument) {
         favoriteModel.setFavoriteOn(favoriteId, actionArgument.favoriteActivity);
     }
 }
+
+function returnValueIfExists(checker, value, optional = 0) {
+    var condition = Array.isArray(checker) ? checker.some(el => el) : checker;
+    
+    return condition ? value : optional;
+}

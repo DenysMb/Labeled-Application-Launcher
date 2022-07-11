@@ -1,8 +1,8 @@
 /*
-SPDX-FileCopyrightText: 2013 David Edmundson <davidedmundson@kde.org>
-SPDX-FileCopyrightText: 2021 Mikel Johnson <mikel5764@gmail.com>
+    SPDX-FileCopyrightText: 2013 David Edmundson <davidedmundson@kde.org>
+    SPDX-FileCopyrightText: 2021 Mikel Johnson <mikel5764@gmail.com>
 
-SPDX-License-Identifier: GPL-2.0-or-later
+    SPDX-License-Identifier: GPL-2.0-or-later
 */
 
 import QtQuick 2.15
@@ -16,12 +16,7 @@ import org.kde.kirigami 2.5 as Kirigami
 ColumnLayout {
 
     property string cfg_menuLabel: menuLabel.text
-    property alias cfg_onlyIcon: menuDisplayIcon.checked
-    property alias cfg_onlyText: menuDisplayText.checked
-    property alias cfg_boldFont: boldChk.checked
-    property alias cfg_italicFont: italicChk.checked
     property string cfg_icon: plasmoid.configuration.icon
-    property int cfg_menuDisplay: plasmoid.configuration.menuDisplay
     property int cfg_favoritesDisplay: plasmoid.configuration.favoritesDisplay
     property int cfg_applicationsDisplay: plasmoid.configuration.applicationsDisplay
     property alias cfg_alphaSort: alphaSort.checked
@@ -30,30 +25,8 @@ ColumnLayout {
     property alias cfg_showActionButtonCaptions: showActionButtonCaptions.checked
 
     Kirigami.FormLayout {
-        RadioButton {
-            id: menuDisplayIcon
-            Kirigami.FormData.label: i18n("Menu display mode:")
-            text: i18n("Show only menu icon")
-            ButtonGroup.group: menuDisplayGroup
-            property int index: 0
-            checked: plasmoid.configuration.menuDisplay == index
-        }
-
-        RadioButton {
-            id: menuDisplayText
-            text: i18n("Show only menu label")
-            ButtonGroup.group: menuDisplayGroup
-            property int index: 1
-            checked: plasmoid.configuration.menuDisplay == index
-        }
-
-        Item {
-            Kirigami.FormData.isSection: true
-        }
-
         Button {
             id: iconButton
-            visible: menuDisplayIcon.checked
 
             Kirigami.FormData.label: i18n("Icon:")
 
@@ -99,34 +72,43 @@ ColumnLayout {
                     icon.name: "edit-clear"
                     onClicked: cfg_icon = "start-here-kde"
                 }
+                MenuItem {
+                    text: i18n("Remove Icon")
+                    icon.name: "delete"
+                    enabled: menuLabel.text && plasmoid.formFactor === PlasmaCore.Types.Vertical
+                    onClicked: cfg_icon = ""
+                }
             }
         }
 
         TextField {
-            visible: menuDisplayText.checked
-            Kirigami.FormData.label: i18n("Menu label:")
             id: menuLabel
+            enabled: plasmoid.formFactor !== PlasmaCore.Types.Vertical
+            visible: menuDisplayText.checked
+            Kirigami.FormData.label: i18n("Label:")
             y: -menuLabel.height / (PlasmaCore.Units.devicePixelRatio * 2)
             text: plasmoid.configuration.menuLabel
             placeholderText: i18n("Applications")
             onTextEdited: {
+                if (plasmoid.formFactor === PlasmaCore.Types.Vertical) {
+                    menuLabel.text = ''
+                }
+
                 cfg_menuLabel = menuLabel.text
+                
+                if (!menuLabel.text) {
+                    cfg_icon = cfg_icon || "start-here-kde"
+                }
             }
         }
 
-        GridLayout {
-            columns: 2
-            visible: menuDisplayText.checked
-
-            CheckBox{
-                id: boldChk
-                text: i18n("Bold")
-            }
-
-            CheckBox{
-                id: italicChk
-                text: i18n("Italic")
-            }
+        Label {
+            Layout.fillWidth: true
+            Layout.maximumWidth: Kirigami.Units.gridUnit * 25
+            visible: plasmoid.formFactor === PlasmaCore.Types.Vertical
+            text: i18n("Only icons can be shown when the Panel is vertical.")
+            wrapMode: Text.Wrap
+            font: Kirigami.Theme.smallFont
         }
 
         Item {
@@ -218,16 +200,6 @@ ColumnLayout {
         CheckBox {
             id: showActionButtonCaptions
             text: i18n("Show action button captions")
-        }
-    }
-
-    ButtonGroup {
-        id: menuDisplayGroup
-        onCheckedButtonChanged: {
-            if (checkedButton)
-            {
-                cfg_menuDisplay = checkedButton.index
-            }
         }
     }
 

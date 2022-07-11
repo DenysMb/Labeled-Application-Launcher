@@ -17,6 +17,8 @@ import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 3.0 as PC3
 import org.kde.plasma.private.kicker 0.1 as Kicker
 
+import "code/tools.js" as Tools
+
 Item {
     id: kickoff
 
@@ -135,9 +137,6 @@ Item {
     Plasmoid.compactRepresentation: MouseArea {
         id: compactRoot
 
-        // Property to tell if have to display only icon or only text
-        readonly property bool onlyText: plasmoid.configuration.menuDisplay
-
         // Taken from DigitalClock to ensure uniform sizing when next to each other
         readonly property bool tooSmall: plasmoid.formFactor === PlasmaCore.Types.Horizontal && Math.round(2 * (compactRoot.height / 5)) <= PlasmaCore.Theme.smallestFont.pixelSize
 
@@ -146,19 +145,29 @@ Item {
 
         Layout.minimumWidth: {
             if (!kickoff.inPanel) {
-                return compactRoot.onlyText ? barlabel.width : PlasmaCore.Units.iconSizes.small
+                return [
+                    Tools.returnValueIfExists(plasmoid.icon, buttonIcon.width),
+                    Tools.returnValueIfExists(kickoff.menuLabel, menuLabel.width),
+                    Tools.returnValueIfExists(kickoff.menuLabel, PlasmaCore.Units.smallSpacing * 2),
+                    Tools.returnValueIfExists(kickoff.menuLabel && plasmoid.icon, PlasmaCore.Units.smallSpacing * 2)
+                ].reduce((sum, n) => sum + n, 0);
             }
 
             if (kickoff.vertical) {
                 return -1;
             } else {
-                return compactRoot.onlyText ? barlabel.width : Math.min(PlasmaCore.Units.iconSizeHints.panel, parent.height) * buttonIcon.aspectRatio;
+                return [
+                    Tools.returnValueIfExists(plasmoid.icon, buttonIcon.width),
+                    Tools.returnValueIfExists(kickoff.menuLabel, menuLabel.width),
+                    Tools.returnValueIfExists(kickoff.menuLabel, PlasmaCore.Units.smallSpacing * 2),
+                    Tools.returnValueIfExists(kickoff.menuLabel && plasmoid.icon, PlasmaCore.Units.smallSpacing * 2)
+                ].reduce((sum, n) => sum + n, 0);
             }
         }
 
         Layout.minimumHeight: {
             if (!kickoff.inPanel) {
-                return PlasmaCore.Units.iconSizes.small
+                return PlasmaCore.Units.iconSizes.small;
             }
 
             if (kickoff.vertical) {
@@ -176,7 +185,12 @@ Item {
             if (kickoff.vertical) {
                 return PlasmaCore.Units.iconSizeHints.panel;
             } else {
-                return compactRoot.onlyText ? barlabel.width : Math.min(PlasmaCore.Units.iconSizeHints.panel, parent.height) * buttonIcon.aspectRatio;
+                return [
+                    Tools.returnValueIfExists(plasmoid.icon, buttonIcon.width),
+                    Tools.returnValueIfExists(kickoff.menuLabel, menuLabel.width),
+                    Tools.returnValueIfExists(kickoff.menuLabel, PlasmaCore.Units.smallSpacing * 2),
+                    Tools.returnValueIfExists(kickoff.menuLabel && plasmoid.icon, PlasmaCore.Units.smallSpacing * 2)
+                ].reduce((sum, n) => sum + n, 0);
             }
         }
 
@@ -211,34 +225,40 @@ Item {
             onTriggered: plasmoid.expanded = true
         }
 
-        PlasmaCore.IconItem {
-            id: buttonIcon
-
-            readonly property double aspectRatio: (kickoff.vertical ? implicitHeight / implicitWidth
-                : implicitWidth / implicitHeight)
-
+        RowLayout {
+            id: rowLayout
             anchors.fill: parent
-            source: plasmoid.icon
-            active: parent.containsMouse || compactDragArea.containsDrag
-            smooth: true
-            roundToIconSize: aspectRatio === 1
-            visible: !compactRoot.onlyText
-        }
 
-        PC3.Label {
-            id: barlabel
-            anchors.centerIn: parent
-            text: kickoff.menuLabel
-            height: compactRoot.height
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            wrapMode: Text.NoWrap
-            fontSizeMode: Text.VerticalFit
-            font.pixelSize: tooSmall ? PlasmaCore.Theme.defaultFont.pixelSize : PlasmaCore.Units.roundToIconSize(PlasmaCore.Units.gridUnit * 2)
-            minimumPointSize: PlasmaCore.Theme.smallestFont.pointSize
-            visible: compactRoot.onlyText
-            font.bold: plasmoid.configuration.boldFont
-            font.italic: plasmoid.configuration.italicFont
+            PlasmaCore.IconItem {
+                id: buttonIcon
+
+                readonly property double aspectRatio: (kickoff.vertical ? implicitHeight / implicitWidth
+                    : implicitWidth / implicitHeight)
+                readonly property int iconSize: Tools.returnValueIfExists(plasmoid.icon, compactRoot.height)
+
+                Layout.minimumHeight: iconSize
+                Layout.maximumHeight: iconSize
+                Layout.minimumWidth: iconSize
+                Layout.maximumWidth: iconSize
+                source: plasmoid.icon
+                active: parent.containsMouse || compactDragArea.containsDrag
+                smooth: true
+                roundToIconSize: aspectRatio === 1
+            }
+
+            PC3.Label {
+                id: menuLabel
+                text: !vertical ? kickoff.menuLabel : ''
+                anchors.left: plasmoid.icon ? buttonIcon.right : parent.left
+                anchors.leftMargin: PlasmaCore.Units.smallSpacing * 2
+                height: compactRoot.height
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.NoWrap
+                fontSizeMode: Text.VerticalFit
+                font.pixelSize: tooSmall ? PlasmaCore.Theme.defaultFont.pixelSize : PlasmaCore.Units.roundToIconSize(PlasmaCore.Units.gridUnit * 2)
+                minimumPointSize: PlasmaCore.Theme.smallestFont.pointSize
+            }
         }
     }
 
