@@ -10,8 +10,8 @@
             <default>start-here-kde</default>
         </entry>
         <entry name="menuLabel" type="string">
-            <label>Menu label.</label>
-            <default>Applications</default>
+            <label>Text label for the Panel button</label>
+            <default></default>
         </entry>
         <entry name="favorites" type="StringList">
             <label>List of general favorites. Supported values are menu id's (usually .desktop file names), special URLs that expand into default applications (e.g. preferred://browser), document URLs and KPeople contact URIs.</label>
@@ -52,6 +52,10 @@
         <entry name="showActionButtonCaptions" type="Bool">
             <label>Whether to display captions ("shut down", "log out", etc.) for the footer action buttons</label>
             <default>true</default>
+        </entry>
+        <entry name="compactMode" type="Bool">
+            <label>Whether to use a compact display style for list items</label>
+            <default>false</default>
         </entry>
     </group>
 </kcfg>

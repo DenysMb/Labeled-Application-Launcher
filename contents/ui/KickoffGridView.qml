@@ -9,6 +9,7 @@
 import QtQuick 2.15
 import QtQml 2.15
 import org.kde.plasma.core 2.0 as PlasmaCore
+import org.kde.plasma.components 2.0 as PC2
 import org.kde.plasma.components 3.0 as PC3
 import org.kde.kirigami 2.16 as Kirigami
 
@@ -126,15 +127,10 @@ EmptyPage {
             height: view.cellHeight
             imagePath: "widgets/viewitem"
             prefix: "hover"
-            visible: plasmoid.rootItem.contentArea !== root
-                || ActionMenu.menu.status !== 1
         }
 
-        delegate: KickoffItemDelegate {
+        delegate: KickoffGridDelegate {
             id: itemDelegate
-            icon.width: PlasmaCore.Units.iconSizes.large
-            icon.height: PlasmaCore.Units.iconSizes.large
-            display: PC3.AbstractButton.TextUnderIcon
             width: view.cellWidth
             Accessible.role: Accessible.Cell
         }
@@ -216,7 +212,15 @@ EmptyPage {
                         moveCurrentIndexLeft()
                         focusCurrentItem(event, Qt.BacktabFocusReason)
                     } break
+                    case Qt.Key_H: if (!atLeft && !plasmoid.rootItem.searchField.activeFocus && event.modifiers & Qt.ControlModifier) {
+                        moveCurrentIndexLeft()
+                        focusCurrentItem(event, Qt.BacktabFocusReason)
+                    } break
                     case Qt.Key_Up: if (!atTop) {
+                        moveCurrentIndexUp()
+                        focusCurrentItem(event, Qt.BacktabFocusReason)
+                    } break
+                    case Qt.Key_K: if (!atTop && event.modifiers & Qt.ControlModifier) {
                         moveCurrentIndexUp()
                         focusCurrentItem(event, Qt.BacktabFocusReason)
                     } break
@@ -224,7 +228,15 @@ EmptyPage {
                         moveCurrentIndexRight()
                         focusCurrentItem(event, Qt.TabFocusReason)
                     } break
+                    case Qt.Key_L: if (!atRight && !plasmoid.rootItem.searchField.activeFocus && event.modifiers & Qt.ControlModifier) {
+                        moveCurrentIndexRight()
+                        focusCurrentItem(event, Qt.TabFocusReason)
+                    } break
                     case Qt.Key_Down: if (!atBottom) {
+                        moveCurrentIndexDown()
+                        focusCurrentItem(event, Qt.TabFocusReason)
+                    } break
+                    case Qt.Key_J: if (!atBottom && event.modifiers & Qt.ControlModifier) {
                         moveCurrentIndexDown()
                         focusCurrentItem(event, Qt.TabFocusReason)
                     } break

@@ -10,6 +10,7 @@
 import QtQuick 2.15
 import QtQml 2.15
 import org.kde.plasma.core 2.0 as PlasmaCore
+import org.kde.plasma.components 2.0 as PC2
 import org.kde.plasma.components 3.0 as PC3
 import org.kde.kirigami 2.16 as Kirigami
 
@@ -77,7 +78,6 @@ EmptyPage {
         readonly property real availableWidth: width - leftMargin - rightMargin
         readonly property real availableHeight: height - topMargin - bottomMargin
         property bool movedWithKeyboard: false
-        property bool movedWithWheel: false
 
         Accessible.role: Accessible.List
 
@@ -128,11 +128,9 @@ EmptyPage {
                     && plasmoid.rootItem.searchField.activeFocus) ? 1 : 0.5
             imagePath: "widgets/viewitem"
             prefix: "hover"
-            visible: plasmoid.rootItem.contentArea !== root
-                || ActionMenu.menu.status !== 1
         }
 
-        delegate: KickoffItemDelegate {
+        delegate: KickoffListDelegate {
             width: view.availableWidth
         }
 
@@ -141,13 +139,13 @@ EmptyPage {
             criteria: ViewSection.FullString
             delegate: PC3.AbstractButton {
                 width: view.availableWidth
-                height: KickoffSingleton.listDelegateHeight
+                height: KickoffSingleton.compactListDelegateHeight
 
                 PC3.Label {
                     id: contentLabel
                     anchors.left: parent.left
                     width: section.length === 1
-                        ? KickoffSingleton.listDelegateContentHeight + leftPadding + rightPadding
+                        ? KickoffSingleton.compactListDelegateContentHeight + leftPadding + rightPadding
                         : parent.width
                     height: parent.height
                     leftPadding: view.effectiveLayoutDirection === Qt.LeftToRight
@@ -158,7 +156,7 @@ EmptyPage {
                     verticalAlignment: Text.AlignVCenter
                     maximumLineCount: 1
                     elide: Text.ElideRight
-                    font.pixelSize: KickoffSingleton.listDelegateContentHeight
+                    font.pixelSize: KickoffSingleton.compactListDelegateContentHeight
                     enabled: hoverHandler.hovered
                     text: section.length === 1 ? section.toUpperCase() : section
                 }
@@ -201,10 +199,6 @@ EmptyPage {
             // because Plasma doesn't support Qt scaling.
             horizontalStepSize: 20 * Qt.styleHints.wheelScrollLines * PlasmaCore.Units.devicePixelRatio
             verticalStepSize: 20 * Qt.styleHints.wheelScrollLines * PlasmaCore.Units.devicePixelRatio
-            
-            onWheel: {
-                view.movedWithWheel = true
-            }
         }
 
         Connections {
@@ -221,12 +215,6 @@ EmptyPage {
             id: movedWithKeyboardTimer
             interval: 200
             onTriggered: view.movedWithKeyboard = false
-        }
-        
-        Timer {
-            id: movedWithWheelTimer
-            interval: 200
-            onTriggered: view.movedWithWheel = false
         }
 
         function focusCurrentItem(event, focusReason) {
@@ -250,7 +238,15 @@ EmptyPage {
                         decrementCurrentIndex()
                         focusCurrentItem(event, Qt.BacktabFocusReason)
                     } break
+                    case Qt.Key_K: if (!atFirst && event.modifiers & Qt.ControlModifier) {
+                        decrementCurrentIndex()
+                        focusCurrentItem(event, Qt.BacktabFocusReason)
+                    } break
                     case Qt.Key_Down: if (!atLast) {
+                        incrementCurrentIndex()
+                        focusCurrentItem(event, Qt.TabFocusReason)
+                    } break
+                    case Qt.Key_J: if (!atLast && event.modifiers & Qt.ControlModifier) {
                         incrementCurrentIndex()
                         focusCurrentItem(event, Qt.TabFocusReason)
                     } break

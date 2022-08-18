@@ -14,12 +14,9 @@ function fillActionMenu(i18n, actionMenu, actionList, favoriteModel, favoriteId)
 
     var actions = createFavoriteActions(i18n, favoriteModel, favoriteId);
 
-    if (actions) {
+    if (actions && actions.length > 0) {
         if (actionList && actionList.length > 0) {
-            var separator = { "type": "separator" };
-            actionList.push(separator);
-            // actionList = actions.concat(actionList); // this crashes Qt O.o
-            actionList.push.apply(actionList, actions);
+            actionList.push({ "type": "separator" }, ...actions);
         } else {
             actionList = actions;
         }
@@ -182,4 +179,13 @@ function returnValueIfExists(checker, value, optional = 0) {
     var condition = Array.isArray(checker) ? checker.some(el => el) : checker;
     
     return condition ? value : optional;
+}
+
+function dynamicSetWidgetWidth(icon, buttonIconWidth, kickoffMenuLabel, menuLabelWidth, spacing) {
+    return [
+        returnValueIfExists(icon, buttonIconWidth),
+        returnValueIfExists(kickoffMenuLabel, menuLabelWidth),
+        returnValueIfExists(kickoffMenuLabel, spacing),
+        returnValueIfExists(kickoffMenuLabel && icon, spacing)
+    ].reduce((sum, n) => sum + n, 0);
 }

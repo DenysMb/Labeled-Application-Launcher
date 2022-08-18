@@ -34,6 +34,8 @@ Item {
         || plasmoid.location === PlasmaCore.Types.LeftEdge
     property bool vertical: plasmoid.formFactor === PlasmaCore.Types.Vertical
 
+    property string defaultIcon: "start-here-kde"
+
     // Used to prevent the width from changing frequently when the scrollbar appears or disappears
     property bool mayHaveGridWithScrollBar: plasmoid.configuration.applicationsDisplay === 0
         || (plasmoid.configuration.favoritesDisplay === 0 && plasmoid.rootItem.rootModel.favoritesModel.count > 16)
@@ -66,8 +68,6 @@ Item {
                 }
                 plasmoid.configuration.favoritesPortedToKAstats = true;
             }
-
-            refresh();
         }
     }
 
@@ -138,36 +138,27 @@ Item {
         id: compactRoot
 
         // Taken from DigitalClock to ensure uniform sizing when next to each other
-        readonly property bool tooSmall: plasmoid.formFactor === PlasmaCore.Types.Horizontal && Math.round(2 * (compactRoot.height / 5)) <= PlasmaCore.Theme.smallestFont.pixelSize
+        readonly property bool panelIsSmall: plasmoid.formFactor === PlasmaCore.Types.Horizontal && Math.round(2 * (compactRoot.height / 5)) <= PlasmaCore.Theme.smallestFont.pixelSize
+        readonly property bool panelIsMedium: plasmoid.formFactor === PlasmaCore.Types.Horizontal && Math.round(2 * (compactRoot.height / 8)) <= PlasmaCore.Theme.smallestFont.pixelSize
 
         implicitWidth: PlasmaCore.Units.iconSizeHints.panel
         implicitHeight: PlasmaCore.Units.iconSizeHints.panel
 
         Layout.minimumWidth: {
             if (!kickoff.inPanel) {
-                return [
-                    Tools.returnValueIfExists(plasmoid.icon, buttonIcon.width),
-                    Tools.returnValueIfExists(kickoff.menuLabel, menuLabel.width),
-                    Tools.returnValueIfExists(kickoff.menuLabel, PlasmaCore.Units.smallSpacing * 2),
-                    Tools.returnValueIfExists(kickoff.menuLabel && plasmoid.icon, PlasmaCore.Units.smallSpacing * 2)
-                ].reduce((sum, n) => sum + n, 0);
+                return Tools.dynamicSetWidgetWidth(plasmoid.icon, buttonIcon.width, kickoff.menuLabel, labelTextField.width, PlasmaCore.Units.smallSpacing * 2);
             }
 
             if (kickoff.vertical) {
                 return -1;
             } else {
-                return [
-                    Tools.returnValueIfExists(plasmoid.icon, buttonIcon.width),
-                    Tools.returnValueIfExists(kickoff.menuLabel, menuLabel.width),
-                    Tools.returnValueIfExists(kickoff.menuLabel, PlasmaCore.Units.smallSpacing * 2),
-                    Tools.returnValueIfExists(kickoff.menuLabel && plasmoid.icon, PlasmaCore.Units.smallSpacing * 2)
-                ].reduce((sum, n) => sum + n, 0);
+                return Tools.dynamicSetWidgetWidth(plasmoid.icon, buttonIcon.width, kickoff.menuLabel, labelTextField.width, PlasmaCore.Units.smallSpacing * 2);
             }
         }
 
         Layout.minimumHeight: {
             if (!kickoff.inPanel) {
-                return PlasmaCore.Units.iconSizes.small;
+                return PlasmaCore.Units.iconSizes.small
             }
 
             if (kickoff.vertical) {
@@ -185,12 +176,7 @@ Item {
             if (kickoff.vertical) {
                 return PlasmaCore.Units.iconSizeHints.panel;
             } else {
-                return [
-                    Tools.returnValueIfExists(plasmoid.icon, buttonIcon.width),
-                    Tools.returnValueIfExists(kickoff.menuLabel, menuLabel.width),
-                    Tools.returnValueIfExists(kickoff.menuLabel, PlasmaCore.Units.smallSpacing * 2),
-                    Tools.returnValueIfExists(kickoff.menuLabel && plasmoid.icon, PlasmaCore.Units.smallSpacing * 2)
-                ].reduce((sum, n) => sum + n, 0);
+                return Tools.dynamicSetWidgetWidth(plasmoid.icon, buttonIcon.width, kickoff.menuLabel, labelTextField.width, PlasmaCore.Units.smallSpacing * 2);
             }
         }
 
@@ -225,9 +211,10 @@ Item {
             onTriggered: plasmoid.expanded = true
         }
 
-        RowLayout {
-            id: rowLayout
-            anchors.fill: parent
+        Row {
+            id: compactRow
+            anchors.centerIn: parent
+            spacing: PlasmaCore.Units.smallSpacing
 
             PlasmaCore.IconItem {
                 id: buttonIcon
@@ -236,29 +223,36 @@ Item {
                     : implicitWidth / implicitHeight)
                 readonly property int iconSize: Tools.returnValueIfExists(plasmoid.icon, compactRoot.height)
 
-                Layout.minimumHeight: iconSize
-                Layout.maximumHeight: iconSize
-                Layout.minimumWidth: iconSize
-                Layout.maximumWidth: iconSize
-                source: plasmoid.icon
+                anchors.verticalCenter: parent.verticalCenter
+                
+                height: iconSize
+                width: iconSize
+
+                source: !kickoff.vertical ? plasmoid.icon : plasmoid.icon ? plasmoid.icon : kickoff.defaultIcon
+                visible: plasmoid.icon
+
                 active: parent.containsMouse || compactDragArea.containsDrag
                 smooth: true
                 roundToIconSize: aspectRatio === 1
-                anchors.fill: vertical ? parent : undefined
             }
 
             PC3.Label {
-                id: menuLabel
-                text: !vertical ? kickoff.menuLabel : ''
-                anchors.left: !vertical ? plasmoid.icon ? buttonIcon.right : parent.left : undefined
-                anchors.leftMargin: !vertical ? PlasmaCore.Units.smallSpacing * 2 : undefined
+                id: labelTextField
+
+                text: !kickoff.vertical ? kickoff.menuLabel : ''
                 height: compactRoot.height
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 wrapMode: Text.NoWrap
-                fontSizeMode: Text.VerticalFit
-                font.pixelSize: tooSmall ? PlasmaCore.Theme.defaultFont.pixelSize : PlasmaCore.Units.roundToIconSize(PlasmaCore.Units.gridUnit * 2)
+                fontSizeMode: compactRoot.panelIsMedium ? Text.VerticalFit : undefined
+                font.pixelSize: compactRoot.panelIsSmall 
+                    ? PlasmaCore.Theme.defaultFont.pixelSize
+                    : compactRoot.panelIsMedium
+                        ? PlasmaCore.Units.roundToIconSize(PlasmaCore.Units.gridUnit)
+                        : PlasmaCore.Units.roundToIconSize(PlasmaCore.Units.gridUnit * 2)
                 minimumPointSize: PlasmaCore.Theme.smallestFont.pointSize
+
+                visible: !kickoff.vertical
             }
         }
     }

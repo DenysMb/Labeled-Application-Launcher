@@ -1,6 +1,7 @@
 /*
     SPDX-FileCopyrightText: 2013 David Edmundson <davidedmundson@kde.org>
     SPDX-FileCopyrightText: 2021 Mikel Johnson <mikel5764@gmail.com>
+    SPDX-FileCopyrightText: 2022 Nate Graham <nate@kde.org>
 
     SPDX-License-Identifier: GPL-2.0-or-later
 */
@@ -12,6 +13,7 @@ import QtQuick.Controls 2.5
 import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.kquickcontrolsaddons 2.0 as KQuickAddons
 import org.kde.kirigami 2.5 as Kirigami
+import org.kde.plasma.extras 2.0 as PlasmaExtras
 
 ColumnLayout {
 
@@ -23,6 +25,7 @@ ColumnLayout {
     property var cfg_systemFavorites: String(plasmoid.configuration.systemFavorites)
     property int cfg_primaryActions: plasmoid.configuration.primaryActions
     property alias cfg_showActionButtonCaptions: showActionButtonCaptions.checked
+    property alias cfg_compactMode: compactModeCheckbox.checked
 
     Kirigami.FormLayout {
         Button {
@@ -52,7 +55,7 @@ ColumnLayout {
                     anchors.centerIn: parent
                     width: PlasmaCore.Units.iconSizes.large
                     height: width
-                    source: cfg_icon
+                    source: plasmoid.formFactor !== PlasmaCore.Types.Vertical ? cfg_icon : cfg_icon ? cfg_icon : "start-here-kde"
                 }
             }
 
@@ -68,12 +71,12 @@ ColumnLayout {
                     onClicked: iconDialog.open()
                 }
                 MenuItem {
-                    text: i18nc("@item:inmenu Reset icon to default", "Clear Icon")
+                    text: i18nc("@item:inmenu Reset icon to default", "Reset to default icon")
                     icon.name: "edit-clear"
                     onClicked: cfg_icon = "start-here-kde"
                 }
                 MenuItem {
-                    text: i18n("Remove Icon")
+                    text: i18nc("@action:inmenu", "Remove icon")
                     icon.name: "delete"
                     enabled: !!cfg_icon && menuLabel.text && plasmoid.formFactor !== PlasmaCore.Types.Vertical
                     onClicked: cfg_icon = ""
@@ -81,32 +84,40 @@ ColumnLayout {
             }
         }
 
-        TextField {
+        PlasmaExtras.ActionTextField {
             id: menuLabel
             enabled: plasmoid.formFactor !== PlasmaCore.Types.Vertical
-            visible: menuDisplayText.checked
-            Kirigami.FormData.label: i18n("Label:")
-            y: -menuLabel.height / (PlasmaCore.Units.devicePixelRatio * 2)
+            Kirigami.FormData.label: i18nc("@label:textbox", "Text label:")
             text: plasmoid.configuration.menuLabel
-            placeholderText: i18n("Applications")
+            placeholderText: i18nc("@info:placeholder", "Type here to add a text label")
             onTextEdited: {
-                if (plasmoid.formFactor === PlasmaCore.Types.Vertical) {
-                    menuLabel.text = ''
-                }
-
                 cfg_menuLabel = menuLabel.text
                 
+                // This is to make sure that we always have a icon if there is no text.
+                // If the user remove the icon and remove the text, without this, we'll have no icon and no text.
+                // This is to force the icon to be there.
                 if (!menuLabel.text) {
                     cfg_icon = cfg_icon || "start-here-kde"
                 }
             }
+            rightActions: [
+                Action {
+                    icon.name: "edit-clear"
+                    enabled: menuLabel.text !== ""
+                    onTriggered: {
+                        menuLabel.clear()
+                        cfg_menuLabel = ''
+                        cfg_icon = cfg_icon || "start-here-kde"
+                    }
+                }
+            ]
         }
 
         Label {
             Layout.fillWidth: true
             Layout.maximumWidth: Kirigami.Units.gridUnit * 25
             visible: plasmoid.formFactor === PlasmaCore.Types.Vertical
-            text: i18n("Only icons can be shown when the Panel is vertical.")
+            text: i18nc("@info", "A text label cannot be set when the Panel is vertical.")
             wrapMode: Text.Wrap
             font: Kirigami.Theme.smallFont
         }
@@ -117,7 +128,22 @@ ColumnLayout {
 
         CheckBox {
             id: alphaSort
+            Kirigami.FormData.label: i18nc("General options", "General:")
             text: i18n("Always sort applications alphabetically")
+        }
+
+        CheckBox {
+            id: compactModeCheckbox
+            text: i18n("Use compact list item style")
+            checked: Kirigami.Settings.tabletMode ? true : plasmoid.configuration.compactMode
+            enabled: !Kirigami.Settings.tabletMode
+        }
+        Label {
+            visible: Kirigami.Settings.tabletMode
+            text: i18nc("@info:usagetip under a checkbox when Touch Mode is on", "Automatically disabled when in Touch Mode")
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            font: Kirigami.Theme.smallFont
         }
 
         Button {
